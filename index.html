@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>견적 계산기</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif; margin: 0; padding: 16px; }
+    .card { border: 1px solid #e6e6e6; border-radius: 12px; padding: 16px; max-width: 520px; }
+    h1 { font-size: 16px; margin: 0 0 12px; }
+    label { display: block; font-size: 13px; margin: 12px 0 6px; }
+    select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #d9d9d9; }
+    .result { margin-top: 14px; padding: 12px; border-radius: 10px; background: #f7f7f7; }
+    .price { font-size: 20px; font-weight: 700; }
+    .meta { font-size: 12px; color: #666; margin-top: 6px; line-height: 1.4; }
+    button { margin-top: 10px; width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #d9d9d9; background: white; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>견적 계산기 (테스트)</h1>
+
+    <label for="type">옵션</label>
+    <select id="type">
+      <option value="full">전신 (60,000원 · 비상업 기준)</option>
+      <option value="half">반신 (40,000원 · 비상업 기준)</option>
+    </select>
+
+    <label for="usage">용도</label>
+    <select id="usage">
+      <option value="noncommercial">비상업용 (×1)</option>
+      <option value="streaming">방송용 (×2)</option>
+      <option value="commercial">상업용 (×3)</option>
+    </select>
+
+    <div class="result" id="result">
+      <div class="price" id="priceText">-</div>
+      <div class="meta" id="metaText">옵션을 선택하면 자동 계산됩니다.</div>
+      <button id="copyBtn" type="button">결과 문구 복사</button>
+    </div>
+  </div>
+
+  <script>
+    const basePrices = {
+      full: 60000,
+      half: 40000
+    };
+
+    const multipliers = {
+      noncommercial: 1,
+      streaming: 2,
+      commercial: 3
+    };
+
+    const labels = {
+      full: "전신",
+      half: "반신",
+      noncommercial: "비상업용",
+      streaming: "방송용",
+      commercial: "상업용"
+    };
+
+    const won = (n) => n.toLocaleString("ko-KR") + "원";
+
+    const typeEl = document.getElementById("type");
+    const usageEl = document.getElementById("usage");
+    const priceTextEl = document.getElementById("priceText");
+    const metaTextEl = document.getElementById("metaText");
+    const copyBtn = document.getElementById("copyBtn");
+
+    function calc() {
+      const type = typeEl.value;
+      const usage = usageEl.value;
+
+      const base = basePrices[type];
+      const mul = multipliers[usage];
+      const total = base * mul;
+
+      priceTextEl.textContent = won(total);
+      metaTextEl.textContent =
+        `${labels[type]} · ${labels[usage]} (기본 ${won(base)} × ${mul})`;
+
+      return { type, usage, base, mul, total };
+    }
+
+    typeEl.addEventListener("change", calc);
+    usageEl.addEventListener("change", calc);
+
+    copyBtn.addEventListener("click", async () => {
+      const r = calc();
+      const text = `견적(테스트): ${labels[r.type]} / ${labels[r.usage]} = ${won(r.total)} (기본 ${won(r.base)} × ${r.mul})`;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = "복사됨";
+        setTimeout(() => (copyBtn.textContent = "결과 문구 복사"), 900);
+      } catch (e) {
+        alert(text);
+      }
+    });
+
+    calc();
+  </script>
+</body>
+</html>
